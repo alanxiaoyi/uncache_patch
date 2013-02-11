@@ -1,0 +1,20 @@
+README
+
+This patch is based on Ubuntu kernel 3.2.0.35(32bit) for intel x86 core. It contains three systemcall.
+
++ 	.long sys_uncachemem
++ 	.long sys_wbcachemem
++ 	.long sys_flushallcache
+
+
+1. sys_uncachemem
+
+uncache instruction section of one user space application
+
+2. sys_wbcachemem
+
+change it back to write back
+
+3. sys_flushallcache
+
+flush cache (for all cores)
