@@ -1,0 +1,551 @@
+diff -crB ../original/linux-3.2.0/arch/x86/include/asm/cacheflush.h linux-3.2.0_uncache/arch/x86/include/asm/cacheflush.h
+*** ../original/linux-3.2.0/arch/x86/include/asm/cacheflush.h	2012-01-04 18:55:44.000000000 -0500
+--- linux-3.2.0_uncache/arch/x86/include/asm/cacheflush.h	2013-02-10 14:20:15.185526734 -0500
+***************
+*** 104,109 ****
+--- 104,120 ----
+  int set_memory_np(unsigned long addr, int numpages);
+  int set_memory_4k(unsigned long addr, int numpages);
+  
++ /*yw:my defined user_set_memory_uc*/
++ int user_set_memory_uc(unsigned long v_addr);
++ int _user_set_memory_uc(unsigned long v_addr);
++ int user_uncache_range(void);
++ int user_wbcache_range(void);
++ void user_flushallcache(void);
++ int _user_set_memory_wb(unsigned long v_addr);
++ int user_set_memory_wb(unsigned long v_addr);
++ 
++ /*yw: end*/
++ 
+  int set_memory_array_uc(unsigned long *addr, int addrinarray);
+  int set_memory_array_wc(unsigned long *addr, int addrinarray);
+  int set_memory_array_wb(unsigned long *addr, int addrinarray);
+Only in linux-3.2.0_uncache/arch/x86/include/asm: cacheflush.h~
+Only in linux-3.2.0_uncache/arch/x86/include/asm: flushallcache.h
+Only in linux-3.2.0_uncache/arch/x86/include/asm: flushcacheall.h~
+diff -crB ../original/linux-3.2.0/arch/x86/include/asm/pgtable_types.h linux-3.2.0_uncache/arch/x86/include/asm/pgtable_types.h
+*** ../original/linux-3.2.0/arch/x86/include/asm/pgtable_types.h	2012-01-04 18:55:44.000000000 -0500
+--- linux-3.2.0_uncache/arch/x86/include/asm/pgtable_types.h	2013-02-08 02:35:46.069184762 -0500
+***************
+*** 333,338 ****
+--- 333,342 ----
+   * NOTE: the return type is pte_t but if the pmd is PSE then we return it
+   * as a pte too.
+   */
++ 
++ /*yw: my defined functions*/
++ extern pte_t *user_lookup_address(unsigned long v);
++ /*yw: end*/
+  extern pte_t *lookup_address(unsigned long address, unsigned int *level);
+  
+  #endif	/* !__ASSEMBLY__ */
+Only in linux-3.2.0_uncache/arch/x86/include/asm: pgtable_types.h~
+Only in linux-3.2.0_uncache/arch/x86/include/asm: uncachemem.h
+Only in linux-3.2.0_uncache/arch/x86/include/asm: uncachemem.h~
+diff -crB ../original/linux-3.2.0/arch/x86/include/asm/unistd_32.h linux-3.2.0_uncache/arch/x86/include/asm/unistd_32.h
+*** ../original/linux-3.2.0/arch/x86/include/asm/unistd_32.h	2012-01-04 18:55:44.000000000 -0500
+--- linux-3.2.0_uncache/arch/x86/include/asm/unistd_32.h	2013-02-10 13:48:17.917584789 -0500
+***************
+*** 354,363 ****
+  #define __NR_setns		346
+  #define __NR_process_vm_readv	347
+  #define __NR_process_vm_writev	348
+! 
+  #ifdef __KERNEL__
+! 
+! #define NR_syscalls 349
+  
+  #define __ARCH_WANT_IPC_PARSE_VERSION
+  #define __ARCH_WANT_OLD_READDIR
+--- 354,368 ----
+  #define __NR_setns		346
+  #define __NR_process_vm_readv	347
+  #define __NR_process_vm_writev	348
+! /*yw: my defined syscall*/
+! #define __NR_uncachemem         349
+! #define __NR_wbcachemem         350
+! #define __NR_flushallcache      351
+! /*yw: end*/
+!  
+  #ifdef __KERNEL__
+! /*yw: 349->352*/
+! #define NR_syscalls 352
+  
+  #define __ARCH_WANT_IPC_PARSE_VERSION
+  #define __ARCH_WANT_OLD_READDIR
+Only in linux-3.2.0_uncache/arch/x86/include/asm: unistd_32.h~
+diff -crB ../original/linux-3.2.0/arch/x86/include/asm/unistd_64.h linux-3.2.0_uncache/arch/x86/include/asm/unistd_64.h
+*** ../original/linux-3.2.0/arch/x86/include/asm/unistd_64.h	2012-01-04 18:55:44.000000000 -0500
+--- linux-3.2.0_uncache/arch/x86/include/asm/unistd_64.h	2013-02-10 13:53:08.457575992 -0500
+***************
+*** 687,692 ****
+--- 687,705 ----
+  #define __NR_process_vm_writev			311
+  __SYSCALL(__NR_process_vm_writev, sys_process_vm_writev)
+  
++  /*yw: my defined syscall*/
++  #define __NR_uncachemem          312
++  __SYSCALL(__NR_uncachemem, sys_uncachemem)
++ 
++  #define __NR_wbcachemem          313
++  __SYSCALL(__NR_wbcachemem, sys_wbcachemem)
++ 
++  #define __NR_flushallcache          314
++  __SYSCALL(__NR_flushallcache, sys_flushallcache)
++  /*yw: end*/
++ 
++ 
++ 
+  #ifndef __NO_STUBS
+  #define __ARCH_WANT_OLD_READDIR
+  #define __ARCH_WANT_OLD_STAT
+Only in linux-3.2.0_uncache/arch/x86/include/asm: unistd_64.h~
+Only in linux-3.2.0_uncache/arch/x86/include/asm: wbcachemem.h
+Only in linux-3.2.0_uncache/arch/x86/include/asm: wbcachemem.h~
+Only in linux-3.2.0_uncache/arch/x86/include: generated
+Only in linux-3.2.0_uncache/arch/x86/kernel: flushallcache.c
+Only in linux-3.2.0_uncache/arch/x86/kernel: flushallcache.c~
+diff -crB ../original/linux-3.2.0/arch/x86/kernel/Makefile linux-3.2.0_uncache/arch/x86/kernel/Makefile
+*** ../original/linux-3.2.0/arch/x86/kernel/Makefile	2012-01-04 18:55:44.000000000 -0500
+--- linux-3.2.0_uncache/arch/x86/kernel/Makefile	2013-02-10 14:01:38.829560537 -0500
+***************
+*** 18,23 ****
+--- 18,24 ----
+  endif
+  
+  obj-y			:= process_$(BITS).o signal.o entry_$(BITS).o
++ obj-y 			+= uncachemem.o wbcachemem.o flushallcache.o
+  obj-y			+= traps.o irq.o irq_$(BITS).o dumpstack_$(BITS).o
+  obj-y			+= time.o ioport.o ldt.o dumpstack.o nmi.o
+  obj-y			+= setup.o x86_init.o i8259.o irqinit.o jump_label.o
+Only in linux-3.2.0_uncache/arch/x86/kernel: Makefile~
+diff -crB ../original/linux-3.2.0/arch/x86/kernel/syscall_table_32.S linux-3.2.0_uncache/arch/x86/kernel/syscall_table_32.S
+*** ../original/linux-3.2.0/arch/x86/kernel/syscall_table_32.S	2012-01-04 18:55:44.000000000 -0500
+--- linux-3.2.0_uncache/arch/x86/kernel/syscall_table_32.S	2013-02-10 14:40:49.081489372 -0500
+***************
+*** 348,350 ****
+--- 348,355 ----
+  	.long sys_setns
+  	.long sys_process_vm_readv
+  	.long sys_process_vm_writev
++ 	.long sys_uncachemem
++ 	.long sys_wbcachemem
++ 	.long sys_flushallcache
++ 
++ 
+Only in linux-3.2.0_uncache/arch/x86/kernel: syscall_table_32.S~
+Only in linux-3.2.0_uncache/arch/x86/kernel: uncachemem.c
+Only in linux-3.2.0_uncache/arch/x86/kernel: uncachemem.c~
+Only in linux-3.2.0_uncache/arch/x86/kernel: wbcachemem.c
+Only in linux-3.2.0_uncache/arch/x86/kernel: wbcachemem.c~
+diff -crB ../original/linux-3.2.0/arch/x86/mm/pageattr.c linux-3.2.0_uncache/arch/x86/mm/pageattr.c
+*** ../original/linux-3.2.0/arch/x86/mm/pageattr.c	2012-01-04 18:55:44.000000000 -0500
+--- linux-3.2.0_uncache/arch/x86/mm/pageattr.c	2013-02-10 14:18:50.265529305 -0500
+***************
+*** 166,171 ****
+--- 166,183 ----
+  	on_each_cpu(__cpa_flush_all, (void *) cache, 1);
+  }
+  
++ /*yw: for flushcacheall system call*/
++ 
++ void user_flushallcache(void){
++ 
++ 	cpa_flush_all(1);
++ 
++ }
++ 
++ 
++ /*yw: end*/
++ 
++ 
+  static void __cpa_flush_range(void *arg)
+  {
+  	/*
+***************
+*** 330,335 ****
+--- 342,389 ----
+   * or when the present bit is not set. Otherwise we would return a
+   * pointer to a nonexisting mapping.
+   */
++ 
++  /*yw: my defined functions*/
++  pte_t *user_lookup_address(unsigned long v){
++    //  printk("enter user_lookup_address\n");
++     pgd_t *pgd;
++      pgd= pgd_offset(current->mm, v);
++      if (!pgd_none(*pgd)) {
++  		pud_t *pud = pud_offset(pgd, v);
++  		if (!pud_none(*pud)) {
++  			pmd_t *pmd = pmd_offset(pud, v);
++  			if (!pmd_none(*pmd)) {
++  				pte_t *pte;
++  				pte = pte_offset_map(pmd, v);
++  			//	printk(KERN_ALERT "pte flags %x\n", pte_flags(*pte));
++  				if (pte_present(*pte)){
++ 					printk("lookup find pte value %llx\n", pte_val(*pte));
++  					return pte;
++ 
++ 				}
++  		 
++  				else {
++  					printk(KERN_ALERT "cannot find pte\n");
++  				}
++  
++  			}
++  			else{
++  			printk(KERN_ALERT "cannot find pmd\n");
++  
++  			}
++  		}
++  		else {
++  
++  			printk(KERN_ALERT "cannot find pud\n");
++  		}
++      }
++      else {
++  		printk(KERN_ALERT "cannot find PGD\n");			
++      }
++      return NULL;
++  }
++  /*yw: end*/
++ 
+  pte_t *lookup_address(unsigned long address, unsigned int *level)
+  {
+  	pgd_t *pgd = pgd_offset_k(address);
+***************
+*** 624,629 ****
+--- 678,718 ----
+  	}
+  }
+  
++  /*yw: my defined function*/
++  static int __user_change_page_attr(struct cpa_data *cpa){
++  //	printk("enter __user_change_page_attr\n");
++  	unsigned long address;
++  	pte_t *ppte, old_pte;  //ppte:  process page table entry
++  	
++  	address=*cpa->vaddr;
++  	ppte=user_lookup_address(address);
++  	
++  	old_pte=*ppte;
++  	
++  
++      pte_t new_pte;
++      pgprot_t new_prot = pte_pgprot(old_pte);
++      unsigned long pfn = pte_pfn(old_pte);
++   
++      pgprot_val(new_prot) &= ~pgprot_val(cpa->mask_clr);
++      pgprot_val(new_prot) |= pgprot_val(cpa->mask_set);
++    //  new_prot = static_protections(new_prot, address, pfn);  no need to protect I think
++  
++      new_pte = pfn_pte(pfn, canon_pgprot(new_prot));  //ÓÉpfn ºÍ prot µÃ³öpte
++      cpa->pfn = pfn;
++      printk("new pte is %llx,  now pte is %llx, old pte is %llx\n", pte_val(new_pte),  pte_val(*ppte),  pte_val(old_pte));
++      if (pte_val(old_pte) != pte_val(new_pte)) {
++          set_pte_atomic(ppte, new_pte);			//ÏòÒ»žöÒ³±íÏîÄÚÐŽÈëÖž¶šµÄÖµ
++  	 printk("set pte atomic to a different value!!!\n");
++ 	 printk("new pte is %llx,  now pte is %llx, old pte is %llx\n", pte_val(new_pte),  pte_val(*ppte),  pte_val(old_pte));
++  	 pte_unmap(ppte);
++          cpa->flags |= CPA_FLUSHTLB;
++      }	
++      return 0;
++  }
++  /*yw: end*/
++ 
++ 
+  static int __change_page_attr(struct cpa_data *cpa, int primary)
+  {
+  	unsigned long address;
+***************
+*** 787,792 ****
+--- 876,901 ----
+  	return 0;
+  }
+  
++ /*yw: my defined function*/
++  static int __user_change_page_attr_set_clr(struct cpa_data *cpa){
++  	//printk("enter __user_change_page_attr_set_clr\n");
++  	int ret;
++  	
++  	if(!debug_pagealloc)			//??
++  		spin_lock(&cpa_lock);							// spinlock for modifying the attribute of page
++  	ret=__user_change_page_attr(cpa);
++  	if(!debug_pagealloc)
++  		spin_unlock(&cpa_lock);
++ 	if(ret)
++  			return ret;
++   
++  	//here I delete check alias. I think no need
++  	
++  	return 0;
++  
++  }
++ /*yw: end*/
++ 
+  static int __change_page_attr_set_clr(struct cpa_data *cpa, int checkalias)
+  {
+  	int ret, numpages = cpa->numpages;
+***************
+*** 837,842 ****
+--- 947,1007 ----
+  		(_PAGE_PAT | _PAGE_PAT_LARGE | _PAGE_PWT | _PAGE_PCD);
+  }
+  
++ 
++ 
++  /*yw: my defined function*/
++  static int user_change_page_attr_set_clr(unsigned long *addr, pgprot_t mask_set, pgprot_t mask_clr){
++  	
++  	//printk("enter user_change_page_attr_set_clr\n");
++  	struct cpa_data cpa;
++  	unsigned long baddr=0;
++  	int cache;
++  	int ret;
++      mask_set = canon_pgprot(mask_set);	//mask out  unsued bits
++      mask_clr = canon_pgprot(mask_clr);
++  	
++  	if (!pgprot_val(mask_set) && !pgprot_val(mask_clr) )		//ensure that we modify to something
++  		return 0;	
++  
++  	
++      if (*addr & ~PAGE_MASK) {			//pass unaligned address
++           *addr &= PAGE_MASK;
++  	//printk("user_change_page_attr_set_clr, unaligned address\n");
++           WARN_ON_ONCE(1);
++      }
++  	
++      baddr = *addr;						//backup address for cache flush
++  	
++  	kmap_flush_unused();    
++  	vm_unmap_aliases();		
++  	
++  	cpa.vaddr=addr;
++  	cpa.pages=NULL;
++  	cpa.numpages=1;
++  	cpa.mask_set=mask_set;
++  	cpa.mask_clr=mask_clr;   //ÕâžöÊÇ0 
++  	cpa.flags=0;		//ÊÇ·ñflush
++  	cpa.curpage=0;
++  	cpa.force_split=0;
++  	
++  	// checkalias = (pgprot_val(mask_set) | pgprot_val(mask_clr)) != _PAGE_NX; // Èç¹ûÊÇNXbit  ŸÍ²»ÓÃŒì²éaliasÁË
++  	
++  	ret=__user_change_page_attr_set_clr(&cpa);
++  	
++  	if(!(cpa.flags & CPA_FLUSHTLB))    //CPA_FLUSHTLB is defined to 1
++  		goto out;
++  		
++  	cache=cache_attr(mask_set);			//if mask_set is 0     no attribute set so we don't need to flush. "cache" will be passed to those "flush" functions
++  	
++  	cpa_flush_all(cache);		//	flush cache;
++  	
++  out: 
++  		return ret;
++  	
++  }
++  /*yw:end*/
++ 
++ 
+  static int change_page_attr_set_clr(unsigned long *addr, int numpages,
+  				    pgprot_t mask_set, pgprot_t mask_clr,
+  				    int force_split, int in_flag,
+***************
+*** 936,941 ****
+--- 1101,1115 ----
+  	return ret;
+  }
+  
++ 
++  /*yw: my defined function*/
++ static inline int user_change_page_attr_set(unsigned long *addr,
++                                          pgprot_t mask)
++   {
++          return user_change_page_attr_set_clr(addr,mask, __pgprot(0));
++  }
++  /*yw: end*/
++ 
+  static inline int change_page_attr_set(unsigned long *addr, int numpages,
+  				       pgprot_t mask, int array)
+  {
+***************
+*** 964,969 ****
+--- 1138,1252 ----
+  		CPA_PAGES_ARRAY, pages);
+  }
+  
++ 
++  
++ 
++  /*yw: my defined function*/
++  
++  
++  unsigned long long user_va_to_pa(unsigned long v)
++  {
++   
++      pgd_t *pgd = pgd_offset(current->mm, v);
++      printk("process id is %d\n",current->pid); 
++  
++      if (!pgd_none(*pgd)) {
++  	pud_t *pud = pud_offset(pgd, v);
++  		if (!pud_none(*pud)) {
++  			pmd_t *pmd = pmd_offset(pud, v);
++  			if (!pmd_none(*pmd)) {
++  				pte_t *pte;
++  				pte = pte_offset_map(pmd, v);
++  				printk(KERN_ALERT "pte value is (in vatopa) %llx\n", pte_val(*pte));
++  				if (pte_present(*pte)){
++  				   
++  				   unsigned long long pa=pte_val(*pte) & PTE_PFN_MASK;
++  				   pte_unmap(pte);
++  				   return pa;			//return the real physical address		   
++  				}
++  				else {
++  					printk(KERN_ALERT "cannot find pte\n");
++  				}
++  
++  			}
++  			else{
++  				printk(KERN_ALERT "cannot find pmd\n");
++  
++  			}
++  		}
++  		else {
++  
++  			printk(KERN_ALERT "cannot find pud\n");
++  		}
++      }
++      else {
++  		printk(KERN_ALERT "cannot find PGD\n");			
++      }
++  	return 1;
++  }
++  
++  
++  
++  
++  int _user_set_memory_uc(unsigned long addr){
++  
++  	return user_change_page_attr_set(&addr,__pgprot(_PAGE_CACHE_UC_MINUS));
++  
++  }
++  
++  int user_set_memory_uc(unsigned long v_addr){
++          int ret;
++  	ret=reserve_memtype(user_va_to_pa(v_addr),user_va_to_pa(v_addr)+PAGE_SIZE, _PAGE_CACHE_UC_MINUS, NULL);
++  	printk("the virtual is %lx, the physical is %llx \n", v_addr, user_va_to_pa(v_addr));
++  	if(ret)
++  		goto out_err;
++  	//printk("about to call _user_set_memory_uc\n");
++  	ret = _user_set_memory_uc(v_addr);
++  	//printk("end call of _User_set_memory_uc\n\n");
++  	if(ret)
++  		goto out_free;
++  	return 0;
++  	
++  	
++  out_free:
++  	printk("user_set_memory_uc_set_free\n");
++      free_memtype(user_va_to_pa(v_addr),user_va_to_pa(v_addr) + PAGE_SIZE);
++  	
++  out_err:
++  	printk("user_set_memory_uc_err\n");
++      return ret;
++  }
++  
++  
++  
++  int user_uncache_range(){
++  
++  
++  	//printk(KERN_ALERT "run uncache\n");		
++  	//printk(KERN_ALERT "current pid is %d\n", current->pid);	
++  	unsigned long code_start=(current->mm)->start_code;
++  	unsigned long code_end=(current->mm)->end_code;	
++ 	unsigned long iter;
++ 	int ret=0;
++ 	for(iter=code_start;  iter<code_end; iter+=PAGE_SIZE){
++ 	 	printk("iter code address is %lx\n", iter);	
++ 	 	ret=user_set_memory_uc(iter);
++ 		if(ret!=0) {
++ 			printk("not complete iter in uncache, stop at %lx, should %lx\n", iter, code_end);
++ 			break;
++ 		}
++ 	}
++ 	 
++  	return ret;
++  }
++ 
++  
++  
++  /*yw: end*/
++  
++  
++ 
++ 
+  int _set_memory_uc(unsigned long addr, int numpages)
+  {
+  	/*
+***************
+*** 1087,1092 ****
+--- 1373,1430 ----
+  }
+  EXPORT_SYMBOL(set_memory_wc);
+  
++ 
++ /*yw: setmemory wb*/
++ static inline int user_change_page_attr_clear(unsigned long *addr, 
++ 					 pgprot_t mask)
++ {
++ 	return user_change_page_attr_set_clr(addr,  __pgprot(0), mask);
++ }
++ 
++ 
++  int _user_set_memory_wb(unsigned long addr)
++  {
++          return user_change_page_attr_clear(&addr,
++                                        __pgprot(_PAGE_CACHE_MASK));
++  }
++  
++ 
++  int user_set_memory_wb(unsigned long v_addr)
++  {
++         int ret;
++  
++          ret = _user_set_memory_wb(v_addr);
++          if (ret)
++                  return ret;
++  
++          free_memtype(user_va_to_pa(v_addr), user_va_to_pa(v_addr) +  PAGE_SIZE);
++          return 0;
++  }
++ 
++ int user_wbcache_range(){
++ 
++  	unsigned long code_start=(current->mm)->start_code;
++  	unsigned long code_end=(current->mm)->end_code;	
++ 	unsigned long iter;
++ 	int ret=0;
++ 	for(iter=code_start;  iter<code_end; iter+=PAGE_SIZE){
++ 	 	printk("iter code address is %lx\n", iter);	
++ 	 	ret=user_set_memory_wb(iter);
++ 		if(ret!=0) {
++ 			printk("not complete iter in wb, stop at %lx, should %lx\n", iter, code_end);
++ 			break;
++ 		}
++ 	}
++ 	 
++  	return ret;
++ }
++  
++  
++ /*yw: end*/
++ 
++ 
++ 
++ 
+  int _set_memory_wb(unsigned long addr, int numpages)
+  {
+  	return change_page_attr_clear(&addr, numpages,
+
